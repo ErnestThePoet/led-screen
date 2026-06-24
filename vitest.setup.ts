@@ -18,3 +18,29 @@ if (typeof OffscreenCanvas === 'undefined') {
     }
   }
 }
+
+// Patch the canvas mock to allow shadowBlur = 0
+const originalGetCanvasElement = (globalThis as any).HTMLCanvasElement?.prototype?.getContext
+if (originalGetCanvasElement) {
+  ;(globalThis as any).HTMLCanvasElement.prototype.getContext = function (contextType: string) {
+    const ctx = originalGetCanvasElement.call(this, contextType)
+    if (contextType === '2d' && ctx && !(ctx as any)._shadowBlurPatched) {
+      const originalShadowBlurDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(ctx), 'shadowBlur')
+      if (originalShadowBlurDescriptor) {
+        Object.defineProperty(ctx, 'shadowBlur', {
+          get: originalShadowBlurDescriptor.get,
+          set: function (value: number) {
+            const result = Number(value)
+            // Allow 0 to reset shadowBlur
+            if (Number.isFinite(result) && result >= 0) {
+              const stackIndex = (this as any)._stackIndex
+              ;(this as any)._shadowBlurStack[stackIndex] = result
+            }
+          }
+        })
+      }
+      ;(ctx as any)._shadowBlurPatched = true
+    }
+    return ctx
+  }
+}

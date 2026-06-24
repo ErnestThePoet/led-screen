@@ -67,7 +67,7 @@ export function rasterizeClock(widget: ClockWidget, dotSize: number): OffscreenC
 }
 
 function drawHand(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
   cx: number,
   cy: number,
   angle: number,

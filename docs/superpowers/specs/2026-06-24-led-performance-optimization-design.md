@@ -113,7 +113,7 @@ export function drawLedDot(ctx, cx, cy, radius, color, lit, mode) {
   const sprite = getDotSprite(color, dotSize, mode)
   if (sprite) {
     // 快路径：一次 GPU 纹理采样，无路径、无阴影
-    ctx.drawImage(sprite, cx - radius * 1.5, cy - radius * 1.5, dotSize * 3, dotSize * 3)
+    ctx.drawImage(sprite, cx - radius * 3, cy - radius * 3, dotSize * 3, dotSize * 3)
   } else {
     // 冷启动回退（仅首帧）
     fallbackDrawLit(ctx, cx, cy, radius, color, mode)

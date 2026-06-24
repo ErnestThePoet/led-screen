@@ -2,7 +2,12 @@ import type { ClockWidget } from '../../types'
 
 /**
  * Rasterizes an analog clock face to an OffscreenCanvas.
- * Clock uses a circular face with hour markers, hour/minute/second hands.
+ *
+ * LED-grid constraint: the renderer samples one pixel per dot at the cell
+ * centre (col*dotSize + dotSize/2). To reliably light up dots along any
+ * stroke, every line/arc must be at least `dotSize` pixels wide so the
+ * activation band spans an entire cell pitch. All lineWidths below use
+ * `dotSize` (or a fraction ≥ 0.7*dotSize) to satisfy this constraint.
  */
 export function rasterizeClock(widget: ClockWidget, dotSize: number): OffscreenCanvas {
   const { width, height, showSecondHand } = widget
@@ -13,23 +18,27 @@ export function rasterizeClock(widget: ClockWidget, dotSize: number): OffscreenC
 
   const cx = canvasW / 2
   const cy = canvasH / 2
-  const r = Math.min(cx, cy) * 0.9
+  const r = Math.min(cx, cy) * 0.92
 
   ctx.clearRect(0, 0, canvasW, canvasH)
   ctx.strokeStyle = '#ffffff'
   ctx.fillStyle = '#ffffff'
-  ctx.lineWidth = Math.max(1, dotSize / 4)
+  // Base line width = dotSize ensures every stroke reliably covers LED centres
+  const lw = dotSize
 
-  // Clock face circle
+  // ── Clock face circle ────────────────────────────────────────────────────
+  ctx.lineWidth = lw
   ctx.beginPath()
   ctx.arc(cx, cy, r, 0, Math.PI * 2)
   ctx.stroke()
 
-  // Hour markers (12 ticks)
+  // ── Hour markers (12 ticks, longer so they're clearly visible) ───────────
+  ctx.lineWidth = lw
   for (let i = 0; i < 12; i++) {
     const angle = (i / 12) * Math.PI * 2 - Math.PI / 2
-    const inner = r * 0.85
-    const outer = r * 0.95
+    // Major ticks (3, 6, 9, 12) are longer
+    const inner = i % 3 === 0 ? r * 0.65 : r * 0.78
+    const outer = r * 0.90
     ctx.beginPath()
     ctx.moveTo(cx + Math.cos(angle) * inner, cy + Math.sin(angle) * inner)
     ctx.lineTo(cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer)
@@ -41,26 +50,25 @@ export function rasterizeClock(widget: ClockWidget, dotSize: number): OffscreenC
   const m = now.getMinutes()
   const s = now.getSeconds()
 
-  // Hour hand
+  // ── Hour hand (short, thick) ─────────────────────────────────────────────
   const hAngle = ((h + m / 60) / 12) * Math.PI * 2 - Math.PI / 2
-  drawHand(ctx, cx, cy, hAngle, r * 0.5, Math.max(2, dotSize / 3))
+  drawHand(ctx, cx, cy, hAngle, r * 0.50, lw * 1.5)
 
-  // Minute hand
+  // ── Minute hand (long, medium) ───────────────────────────────────────────
   const mAngle = ((m + s / 60) / 60) * Math.PI * 2 - Math.PI / 2
-  drawHand(ctx, cx, cy, mAngle, r * 0.75, Math.max(1, dotSize / 4))
+  drawHand(ctx, cx, cy, mAngle, r * 0.75, lw * 1.2)
 
-  // Second hand
+  // ── Second hand (longest, thin-but-still-≥lw) ───────────────────────────
   if (showSecondHand) {
     const sAngle = (s / 60) * Math.PI * 2 - Math.PI / 2
     ctx.strokeStyle = '#ff4444'
-    ctx.lineWidth = Math.max(1, dotSize / 6)
-    drawHand(ctx, cx, cy, sAngle, r * 0.85, Math.max(1, dotSize / 6))
+    drawHand(ctx, cx, cy, sAngle, r * 0.85, Math.max(lw * 0.8, 2))
     ctx.strokeStyle = '#ffffff'
   }
 
-  // Center dot
+  // ── Centre dot ──────────────────────────────────────────────────────────
   ctx.beginPath()
-  ctx.arc(cx, cy, Math.max(1, dotSize / 4), 0, Math.PI * 2)
+  ctx.arc(cx, cy, lw, 0, Math.PI * 2)
   ctx.fill()
 
   return canvas
@@ -75,6 +83,7 @@ function drawHand(
   width: number
 ): void {
   ctx.lineWidth = width
+  ctx.lineCap = 'round'
   ctx.beginPath()
   ctx.moveTo(cx, cy)
   ctx.lineTo(cx + Math.cos(angle) * length, cy + Math.sin(angle) * length)

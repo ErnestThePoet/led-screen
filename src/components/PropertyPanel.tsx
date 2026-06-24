@@ -76,13 +76,28 @@ function DateTimePanel({ widget, update }: { widget: DateTimeWidget; update: (p:
       <div style={sectionStyle}>
         <label style={labelStyle}>时间格式（dayjs）</label>
         <input type="text" value={widget.format} onChange={(e) => update({ format: e.target.value } as any)} style={inputStyle} />
-        <span style={{ fontSize: 11, color: '#666' }}>如 HH:mm:ss · YYYY-MM-DD · dddd</span>
+        <span style={{ fontSize: 11, color: '#555', lineHeight: 1.6 }}>
+          HH:mm:ss · YYYY-MM-DD<br />
+          ddd / dddd → 星期（英文 Wed / Wednesday）<br />
+          locale 选中文后 ddd → 周三 · dddd → 星期三
+        </span>
+      </div>
+      <div style={sectionStyle}>
+        <label style={labelStyle}>语言 / Locale</label>
+        <select
+          value={widget.locale ?? 'en'}
+          onChange={(e) => update({ locale: e.target.value as 'en' | 'zh-cn' } as any)}
+          style={inputStyle}
+        >
+          <option value="en">English（Wed / Wednesday）</option>
+          <option value="zh-cn">中文（周三 / 星期三）</option>
+        </select>
       </div>
       <div style={sectionStyle}>
         <label style={labelStyle}>字体</label>
         <FontSelector value={widget.font} onChange={(f) => update({ font: f } as any)} />
       </div>
-      <NumberInput label="字号（px）" value={widget.fontSize} min={6} max={256} onChange={(v) => update({ fontSize: v } as any)} />
+      <NumberInput label="字号（点）" value={widget.fontSize} min={1} max={64} onChange={(v) => update({ fontSize: v } as any)} />
       <CommonFields widget={widget} update={update} />
     </>
   )
@@ -135,7 +150,7 @@ function ScrollTextPanel({ widget, update }: { widget: ScrollTextWidget; update:
         <label style={labelStyle}>字体</label>
         <FontSelector value={widget.font} onChange={(f) => update({ font: f } as any)} />
       </div>
-      <NumberInput label="字号（px）" value={widget.fontSize} min={6} max={256} onChange={(v) => update({ fontSize: v } as any)} />
+      <NumberInput label="字号（点）" value={widget.fontSize} min={1} max={64} onChange={(v) => update({ fontSize: v } as any)} />
       <CommonFields widget={widget} update={update} />
     </>
   )
@@ -150,6 +165,37 @@ function PatternPanel({ widget, update }: { widget: PatternWidget; update: (p: P
       </div>
       <CommonFields widget={widget} update={update} />
     </>
+  )
+}
+
+/** Compact render-mode toggle — always visible at the top of the panel. */
+function RenderModeBar({ board, setBoard }: { board: Board; setBoard: (p: Partial<Board>) => void }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16,
+                  paddingBottom: 12, borderBottom: '1px solid #333' }}>
+      <span style={{ fontSize: 12, color: '#aaa', flexShrink: 0 }}>渲染模式</span>
+      <div style={{ display: 'flex', gap: 4, flex: 1 }}>
+        {(['realistic', 'clean'] as const).map((mode) => (
+          <button
+            key={mode}
+            onClick={() => setBoard({ renderMode: mode })}
+            style={{
+              flex: 1,
+              padding: '4px 0',
+              fontSize: 11,
+              cursor: 'pointer',
+              borderRadius: 4,
+              border: '1px solid',
+              borderColor: board.renderMode === mode ? '#7ec8ff' : '#444',
+              background: board.renderMode === mode ? '#1e3a5f' : '#222',
+              color: board.renderMode === mode ? '#7ec8ff' : '#888',
+            }}
+          >
+            {mode === 'realistic' ? '✦ 发光' : '○ 简洁'}
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -176,6 +222,7 @@ export default function PropertyPanel() {
   if (!selected) {
     return (
       <div style={panelStyle}>
+        <RenderModeBar board={board} setBoard={setBoard} />
         <BoardPanel board={board} setBoard={setBoard} />
       </div>
     )
@@ -183,6 +230,7 @@ export default function PropertyPanel() {
 
   return (
     <div style={panelStyle}>
+      <RenderModeBar board={board} setBoard={setBoard} />
       <h3 style={{ color: '#fff', fontSize: 14, marginTop: 0 }}>
         {selected.type === 'datetime' && '日期时间'}
         {selected.type === 'clock' && '模拟时钟'}

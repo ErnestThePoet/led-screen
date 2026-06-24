@@ -28,7 +28,7 @@ function makeBase(type: WidgetType): WidgetBase {
 function createDefaultWidget(type: WidgetType): Widget {
   switch (type) {
     case 'datetime':
-      return { ...makeBase('datetime'), type: 'datetime', format: 'HH:mm:ss', font: 'Press Start 2P', fontSize: 12 }
+      return { ...makeBase('datetime'), type: 'datetime', format: 'HH:mm:ss', font: 'Press Start 2P', fontSize: 12, locale: 'en' as const }
     case 'clock':
       return { ...makeBase('clock'), type: 'clock', width: 24, height: 24, showSecondHand: true }
     case 'scrolltext':

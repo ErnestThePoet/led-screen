@@ -28,7 +28,7 @@ export function rasterizeScrollText(
 
   ctx.clearRect(0, 0, canvasW, canvasH)
   ctx.fillStyle = '#ffffff'
-  ctx.font = `${fontSize}px "${font}"`
+  ctx.font = `${fontSize * dotSize}px "${font}"`
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'start'
 
@@ -38,10 +38,10 @@ export function rasterizeScrollText(
   const textW = ctx.measureText(text).width
 
   if (state.pauseRemaining > 0) {
-    // Pause: draw text centered, decrement timer
-    ctx.textAlign = 'center'
-    ctx.fillText(text, canvasW / 2, canvasH / 2)
+    // Pause between items: keep the canvas blank so the text doesn't pop
+    // into the center between scroll cycles. Just tick down the timer.
     state.pauseRemaining = Math.max(0, state.pauseRemaining - deltaMs)
+    return canvas
   } else {
     const pixelStep = speed * (deltaMs / 1000)
 
@@ -69,18 +69,19 @@ export function rasterizeScrollText(
       const y = canvasH - state.offset
       ctx.fillText(text, canvasW / 2, y)
       state.offset += pixelStep
-      if (state.offset > canvasH + fontSize) {
+      // fontSize is in dot units; multiply by dotSize to get canvas pixels
+      if (state.offset > canvasH + fontSize * dotSize) {
         state.offset = 0
         state.itemIndex = (state.itemIndex + 1) % items.length
         state.pauseRemaining = pauseMs
       }
     } else {
-      // down
+      // down: text enters from below the canvas
       ctx.textAlign = 'center'
-      const y = -fontSize + state.offset
+      const y = -fontSize * dotSize + state.offset
       ctx.fillText(text, canvasW / 2, y)
       state.offset += pixelStep
-      if (state.offset > canvasH + fontSize) {
+      if (state.offset > canvasH + fontSize * dotSize) {
         state.offset = 0
         state.itemIndex = (state.itemIndex + 1) % items.length
         state.pauseRemaining = pauseMs

@@ -6,11 +6,17 @@ type Props = {
   onChange: (dots: boolean[][]) => void
 }
 
-const CELL_SIZE = 12
+// Property panel inner width ≈ 280px − 32px padding = 248px.
+// Keep cells as large as possible while fitting the canvas in that width,
+// but cap at 14px so large grids still have enough detail.
+const PANEL_INNER_W = 248
+const MAX_CELL = 14
+const MIN_CELL = 4
 
 export default function PatternEditor({ dots, onChange }: Props) {
   const rows = dots.length
   const cols = dots[0]?.length ?? 0
+  const CELL_SIZE = Math.max(MIN_CELL, Math.min(MAX_CELL, Math.floor(PANEL_INNER_W / Math.max(cols, 1))))
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const isDrawingRef = useRef(false)
   const drawModeRef = useRef<boolean>(true) // true = light, false = erase
@@ -106,7 +112,7 @@ export default function PatternEditor({ dots, onChange }: Props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ overflow: 'auto', maxWidth: 480, maxHeight: 320 }}>
+      <div style={{ overflow: 'auto', maxWidth: cols * CELL_SIZE + 2, maxHeight: 400 }}>
         <canvas
           ref={canvasRef}
           width={cols * CELL_SIZE}

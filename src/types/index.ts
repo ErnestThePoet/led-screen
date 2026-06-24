@@ -28,6 +28,8 @@ export type DateTimeWidget = WidgetBase & {
   format: string
   font: string
   fontSize: number
+  /** Locale used for day-of-week / month names. 'zh-cn' enables 星期三 / 周三. */
+  locale: 'en' | 'zh-cn'
 }
 
 export type ClockWidget = WidgetBase & {

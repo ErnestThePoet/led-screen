@@ -20,6 +20,10 @@ if (typeof OffscreenCanvas === 'undefined') {
 }
 
 // Patch the canvas mock to allow shadowBlur = 0
+// vitest-canvas-mock (backed by jest-canvas-mock) rejects shadowBlur = 0 by default, but the
+// Canvas 2D Context spec requires the ability to reset shadowBlur to 0 after drawing. This patch
+// relaxes the validation to accept any non-negative value, allowing the reset behavior needed
+// by drawLedDot() when drawing between different shadow blur states.
 const originalGetCanvasElement = (globalThis as any).HTMLCanvasElement?.prototype?.getContext
 if (originalGetCanvasElement) {
   ;(globalThis as any).HTMLCanvasElement.prototype.getContext = function (contextType: string) {

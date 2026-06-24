@@ -5,7 +5,7 @@ import type { DateTimeWidget } from '../../types'
 const makeWidget = (): DateTimeWidget => ({
   id: 'd1', type: 'datetime', x: 0, y: 0, width: 48, height: 8,
   color: '#ff0000', visible: true, zIndex: 0,
-  format: 'HH:mm', font: 'monospace', fontSize: 12,
+  format: 'HH:mm', font: 'monospace', fontSize: 12, locale: 'en',
 })
 
 describe('rasterizeDateTime', () => {

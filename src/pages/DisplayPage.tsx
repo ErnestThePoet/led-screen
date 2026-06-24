@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLedStore } from '../store/useLedStore'
 import LedCanvas from '../components/LedCanvas'
@@ -7,14 +8,20 @@ export default function DisplayPage() {
   const board = useLedStore((s) => s.board)
   const widgets = useLedStore((s) => s.widgets)
 
+  const [windowSize, setWindowSize] = useState({ w: window.innerWidth, h: window.innerHeight })
+
+  useEffect(() => {
+    const handleResize = () => setWindowSize({ w: window.innerWidth, h: window.innerHeight })
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const step = board.dotSize + board.dotGap
   const canvasW = board.width * step
   const canvasH = board.height * step
 
   // Scale canvas to fill viewport while maintaining aspect ratio
-  const scaleX = window.innerWidth / canvasW
-  const scaleY = window.innerHeight / canvasH
-  const scale = Math.min(scaleX, scaleY)
+  const scale = Math.min(windowSize.w / canvasW, windowSize.h / canvasH)
 
   return (
     <div

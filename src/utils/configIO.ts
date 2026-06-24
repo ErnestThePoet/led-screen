@@ -7,6 +7,8 @@ export function parseConfig(json: string): LedConfig | null {
     if (obj.version !== '1.0') return null
     if (!obj.board || typeof obj.board !== 'object') return null
     if (!Array.isArray(obj.widgets)) return null
+    const VALID_TYPES = ['datetime', 'clock', 'scrolltext', 'pattern']
+    if (!obj.widgets.every((w: any) => w && VALID_TYPES.includes(w.type))) return null
     return obj as LedConfig
   } catch {
     return null

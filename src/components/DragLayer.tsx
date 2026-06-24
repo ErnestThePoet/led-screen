@@ -47,8 +47,14 @@ export default function DragLayer({ scale }: Props) {
               key={w.id}
               position={{ x, y }}
               onStop={(_e, data) => {
-                const dotX = Math.max(0, Math.round(data!.x / scale / step))
-                const dotY = Math.max(0, Math.round(data!.y / scale / step))
+                const dotX = Math.min(
+                  Math.max(0, Math.round(data!.x / scale / step)),
+                  board.width - w.width
+                )
+                const dotY = Math.min(
+                  Math.max(0, Math.round(data!.y / scale / step)),
+                  board.height - w.height
+                )
                 updateWidget(w.id, { x: dotX, y: dotY })
               }}
               bounds="parent"

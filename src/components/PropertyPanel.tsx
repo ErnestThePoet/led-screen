@@ -70,7 +70,15 @@ function CommonFields({ widget, update }: { widget: Widget; update: (p: Partial<
   )
 }
 
-function DateTimePanel({ widget, update }: { widget: DateTimeWidget; update: (p: Partial<Widget>) => void }) {
+function DateTimePanel({
+  widget,
+  update,
+  fontProps,
+}: {
+  widget: DateTimeWidget
+  update: (p: Partial<Widget>) => void
+  fontProps: { customFonts: string[]; onAddCustomFont: (f: string) => void; onRemoveCustomFont: (f: string) => void }
+}) {
   return (
     <>
       <div style={sectionStyle}>
@@ -95,7 +103,7 @@ function DateTimePanel({ widget, update }: { widget: DateTimeWidget; update: (p:
       </div>
       <div style={sectionStyle}>
         <label style={labelStyle}>字体</label>
-        <FontSelector value={widget.font} onChange={(f) => update({ font: f } as any)} />
+        <FontSelector value={widget.font} onChange={(f) => update({ font: f } as any)} {...fontProps} />
       </div>
       <NumberInput label="字号（点）" value={widget.fontSize} min={1} max={64} onChange={(v) => update({ fontSize: v } as any)} />
       <CommonFields widget={widget} update={update} />
@@ -121,7 +129,15 @@ function ClockPanel({ widget, update }: { widget: ClockWidget; update: (p: Parti
   )
 }
 
-function ScrollTextPanel({ widget, update }: { widget: ScrollTextWidget; update: (p: Partial<Widget>) => void }) {
+function ScrollTextPanel({
+  widget,
+  update,
+  fontProps,
+}: {
+  widget: ScrollTextWidget
+  update: (p: Partial<Widget>) => void
+  fontProps: { customFonts: string[]; onAddCustomFont: (f: string) => void; onRemoveCustomFont: (f: string) => void }
+}) {
   const updateItems = (items: string[]) => update({ items } as any)
 
   return (
@@ -148,7 +164,7 @@ function ScrollTextPanel({ widget, update }: { widget: ScrollTextWidget; update:
       <NumberInput label="停顿时长（ms）" value={widget.pauseMs} min={0} max={10000} onChange={(v) => update({ pauseMs: v } as any)} />
       <div style={sectionStyle}>
         <label style={labelStyle}>字体</label>
-        <FontSelector value={widget.font} onChange={(f) => update({ font: f } as any)} />
+        <FontSelector value={widget.font} onChange={(f) => update({ font: f } as any)} {...fontProps} />
       </div>
       <NumberInput label="字号（点）" value={widget.fontSize} min={1} max={64} onChange={(v) => update({ fontSize: v } as any)} />
       <CommonFields widget={widget} update={update} />
@@ -205,10 +221,19 @@ export default function PropertyPanel() {
   const selectedId = useLedStore((s) => s.selectedId)
   const setBoard = useLedStore((s) => s.setBoard)
   const updateWidget = useLedStore((s) => s.updateWidget)
+  const customFonts = useLedStore((s) => s.customFonts)
+  const addCustomFont = useLedStore((s) => s.addCustomFont)
+  const removeCustomFont = useLedStore((s) => s.removeCustomFont)
 
   const selected = widgets.find((w) => w.id === selectedId)
   const update = (patch: Partial<Widget>) => {
     if (selected) updateWidget(selected.id, patch)
+  }
+
+  const fontProps = {
+    customFonts,
+    onAddCustomFont: addCustomFont,
+    onRemoveCustomFont: removeCustomFont,
   }
 
   const panelStyle: React.CSSProperties = {
@@ -237,9 +262,9 @@ export default function PropertyPanel() {
         {selected.type === 'scrolltext' && '滚动文字'}
         {selected.type === 'pattern' && '自定义图案'}
       </h3>
-      {selected.type === 'datetime' && <DateTimePanel widget={selected as DateTimeWidget} update={update} />}
+      {selected.type === 'datetime' && <DateTimePanel widget={selected as DateTimeWidget} update={update} fontProps={fontProps} />}
       {selected.type === 'clock' && <ClockPanel widget={selected as ClockWidget} update={update} />}
-      {selected.type === 'scrolltext' && <ScrollTextPanel widget={selected as ScrollTextWidget} update={update} />}
+      {selected.type === 'scrolltext' && <ScrollTextPanel widget={selected as ScrollTextWidget} update={update} fontProps={fontProps} />}
       {selected.type === 'pattern' && <PatternPanel widget={selected as PatternWidget} update={update} />}
     </div>
   )

@@ -1,4 +1,5 @@
 import type { RenderMode } from '../types'
+import { getDotSprite } from './dotSpriteCache'
 
 export function drawLedDot(
   ctx: CanvasRenderingContext2D,
@@ -9,29 +10,26 @@ export function drawLedDot(
   lit: boolean,
   mode: RenderMode
 ): void {
-  ctx.beginPath()
-  ctx.arc(cx, cy, radius, 0, Math.PI * 2)
-
   if (!lit) {
+    ctx.beginPath()
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2)
     ctx.shadowBlur = 0
     ctx.fillStyle = '#1a1a1a'
     ctx.fill()
     return
   }
 
-  if (mode === 'realistic') {
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius)
-    grad.addColorStop(0, '#ffffff')
-    grad.addColorStop(0.4, color)
-    grad.addColorStop(1, color + '88')
-    ctx.shadowBlur = radius * 3
-    ctx.shadowColor = color
-    ctx.fillStyle = grad
-  } else {
-    ctx.shadowBlur = 0
-    ctx.fillStyle = color
+  const dotSize = radius * 2
+  const sprite = getDotSprite(color, dotSize, mode)
+  if (sprite) {
+    // Fast path: one GPU texture sample, no path/shadow/gradient overhead
+    ctx.drawImage(sprite, cx - radius * 3, cy - radius * 3, dotSize * 3, dotSize * 3)
+    return
   }
 
+  // Fallback: only reached when dotSize <= 0 (getDotSprite guard)
+  ctx.beginPath()
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+  ctx.fillStyle = color
   ctx.fill()
-  ctx.shadowBlur = 0
 }

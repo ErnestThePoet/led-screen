@@ -1,22 +1,19 @@
 import 'vitest-canvas-mock'
 import '@testing-library/jest-dom'
 
-// Polyfill OffscreenCanvas for jsdom
+// Polyfill OffscreenCanvas for jsdom — backed by HTMLCanvasElement so that
+// jest-canvas-mock's drawImage type-check (instanceof HTMLCanvasElement) passes.
 if (typeof OffscreenCanvas === 'undefined') {
-  ;(globalThis as any).OffscreenCanvas = class {
-    width: number
-    height: number
+  class OffscreenCanvasPolyfill extends HTMLCanvasElement {
     constructor(w: number, h: number) {
+      super()
       this.width = w
       this.height = h
     }
-    getContext() {
-      const canvas = document.createElement('canvas')
-      canvas.width = this.width
-      canvas.height = this.height
-      return canvas.getContext('2d')
-    }
   }
+  // customElements.define is required to subclass HTMLCanvasElement in jsdom
+  customElements.define('offscreen-canvas-polyfill', OffscreenCanvasPolyfill, { extends: 'canvas' })
+  ;(globalThis as any).OffscreenCanvas = OffscreenCanvasPolyfill
 }
 
 // Patch the canvas mock to allow shadowBlur = 0

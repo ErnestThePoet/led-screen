@@ -18,7 +18,10 @@ const CHINESE_FONTS = [
   'SimHei', 'Microsoft YaHei', 'SimSun', 'KaiTi',
 ]
 
-function isFontAvailable(fontName: string): boolean {
+const SYSTEM_FONTS = ['Arial', 'Georgia', 'Courier New']
+
+async function isFontAvailable(fontName: string): Promise<boolean> {
+  await document.fonts.ready
   return document.fonts.check(`16px "${fontName}"`)
 }
 
@@ -42,7 +45,7 @@ export default function FontSelector({
     width: '100%',
   }
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const name = input.trim()
     if (!name) return
 
@@ -63,7 +66,8 @@ export default function FontSelector({
       return
     }
 
-    if (!isFontAvailable(name)) {
+    const available = await isFontAvailable(name)
+    if (!available) {
       setWarnedFont(name)
       return
     }
@@ -87,6 +91,11 @@ export default function FontSelector({
             <option key={f} value={f}>{f}</option>
           ))}
         </optgroup>
+        <optgroup label="系统字体">
+          {SYSTEM_FONTS.map((f) => (
+            <option key={f} value={f}>{f}</option>
+          ))}
+        </optgroup>
         {customFonts.length > 0 && (
           <optgroup label="自定义">
             {customFonts.map((f) => (
@@ -103,7 +112,10 @@ export default function FontSelector({
               type="text"
               placeholder="输入字体名…"
               value={input}
-              onChange={(e) => { setInput(e.target.value); setWarnedFont(null) }}
+              onChange={(e) => {
+                setInput(e.target.value)
+                if (e.target.value !== warnedFont) setWarnedFont(null)
+              }}
               onKeyDown={(e) => { if (e.key === 'Enter') handleAdd() }}
               style={{
                 flex: 1,

@@ -89,7 +89,7 @@ export const useLedStore = create<LedStore>((set) => ({
   selectWidget: (id) => set({ selectedId: id }),
   setWidgets: (widgets) => set({ widgets }),
   setConfig: ({ board, widgets, customFonts }) =>
-    set({ board, widgets, customFonts: customFonts ?? [], selectedId: null }),
+    set({ board, widgets, customFonts: Array.isArray(customFonts) ? customFonts : [], selectedId: null }),
   addCustomFont: (font) =>
     set((s) => ({
       customFonts: s.customFonts.includes(font) ? s.customFonts : [...s.customFonts, font],

@@ -3,7 +3,7 @@ import type { Board, Widget } from '../types'
 import { renderFrame } from '../renderer/renderFrame'
 import type { ScrollState } from '../renderer/rasterize/rasterizeScrollText'
 import { clearDotSpriteCache } from '../renderer/dotSpriteCache'
-import { evictWidgetCache } from '../renderer/rasterize/rasterizeCache'
+import { evictWidgetCache, clearRasterCache } from '../renderer/rasterize/rasterizeCache'
 
 type Props = {
   board: Board
@@ -25,6 +25,13 @@ export default function LedCanvas({ board, widgets, scale = 1, style }: Props) {
   const canvasW = board.width * step
   const canvasH = board.height * step
 
+  // Clear both caches when board geometry or render mode changes so sprites and
+  // rasters are rebuilt at the new dotSize / renderMode on the next frame.
+  useEffect(() => {
+    clearDotSpriteCache()
+    clearRasterCache()
+  }, [board.dotSize, board.dotGap, board.renderMode])
+
   // Evict raster cache entries for widgets that have been removed
   useEffect(() => {
     const currentIds = new Set(widgets.map((w) => w.id))
@@ -35,10 +42,6 @@ export default function LedCanvas({ board, widgets, scale = 1, style }: Props) {
   }, [widgets])
 
   useEffect(() => {
-    // Board parameters changed — invalidate sprite cache so dots are re-rendered
-    // at the new size/mode before the next frame.
-    clearDotSpriteCache()
-
     const canvas = canvasRef.current
     if (!canvas) return
 

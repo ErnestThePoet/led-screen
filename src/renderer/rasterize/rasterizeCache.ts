@@ -92,3 +92,7 @@ export function getCachedRaster(
 export function evictWidgetCache(widgetId: string): void {
   widgetCache.delete(widgetId)
 }
+
+export function clearRasterCache(): void {
+  widgetCache.clear()
+}

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { getCachedRaster, evictWidgetCache } from './rasterizeCache'
-import type { PatternWidget, ClockWidget, DateTimeWidget, ScrollTextWidget } from '../../types'
+import type { PatternWidget, ClockWidget, ScrollTextWidget } from '../../types'
 import type { ScrollState } from './rasterizeScrollText'
 
 function makePattern(id: string, dots?: boolean[][]): PatternWidget {

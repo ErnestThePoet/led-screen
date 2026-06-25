@@ -106,9 +106,16 @@ describe('rasterizeCache', () => {
   })
 
   describe('scrolltext', () => {
-    it('returns a new OffscreenCanvas on every call (no caching)', () => {
+    it('reuses the same OffscreenCanvas across calls with the same widget and dotSize', () => {
+      // The canvas is stored in ScrollState.canvas and reused to avoid per-frame allocation.
       const a = getCachedRaster(makeScrollText('w1'), 4, scrollStates, 16)
       const b = getCachedRaster(makeScrollText('w1'), 4, scrollStates, 16)
+      expect(a).toBe(b)
+    })
+
+    it('creates a new OffscreenCanvas when dotSize changes', () => {
+      const a = getCachedRaster(makeScrollText('w1'), 4, scrollStates, 16)
+      const b = getCachedRaster(makeScrollText('w1'), 8, scrollStates, 16)
       expect(a).not.toBe(b)
     })
   })

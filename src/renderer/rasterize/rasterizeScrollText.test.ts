@@ -21,6 +21,33 @@ describe('rasterizeScrollText', () => {
     expect(state.pauseRemaining).toBe(0)
   })
 
+  it('createScrollState has no canvas initially', () => {
+    const state = createScrollState()
+    expect(state.canvas).toBeUndefined()
+  })
+
+  it('state.canvas is set after first call', () => {
+    const state = createScrollState()
+    rasterizeScrollText(makeWidget(), 8, state, 16)
+    expect(state.canvas).toBeInstanceOf(OffscreenCanvas)
+  })
+
+  it('reuses the same canvas instance across calls (no new allocation per frame)', () => {
+    const state = createScrollState()
+    rasterizeScrollText(makeWidget(), 8, state, 16)
+    const first = state.canvas
+    rasterizeScrollText(makeWidget(), 8, state, 16)
+    expect(state.canvas).toBe(first)
+  })
+
+  it('creates a new canvas when dotSize changes', () => {
+    const state = createScrollState()
+    rasterizeScrollText(makeWidget(), 8, state, 16)
+    const first = state.canvas
+    rasterizeScrollText(makeWidget(), 4, state, 16)
+    expect(state.canvas).not.toBe(first)
+  })
+
   it('returns OffscreenCanvas with correct dimensions', () => {
     const state = createScrollState()
     const c = rasterizeScrollText(makeWidget(), 8, state, 16)

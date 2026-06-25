@@ -4,6 +4,8 @@ export type ScrollState = {
   itemIndex: number
   offset: number
   pauseRemaining: number
+  /** Reused across frames to avoid per-frame allocation of a large OffscreenCanvas. */
+  canvas?: OffscreenCanvas
 }
 
 export function createScrollState(): ScrollState {
@@ -23,7 +25,13 @@ export function rasterizeScrollText(
   const { width, height, items, speed, direction, font, fontSize, pauseMs } = widget
   const canvasW = width * dotSize
   const canvasH = height * dotSize
-  const canvas = new OffscreenCanvas(canvasW, canvasH)
+
+  // Reuse the canvas stored in state to avoid per-frame allocation.
+  // Recreate only when dimensions change (e.g. dotSize or widget size changed).
+  if (!state.canvas || state.canvas.width !== canvasW || state.canvas.height !== canvasH) {
+    state.canvas = new OffscreenCanvas(canvasW, canvasH)
+  }
+  const canvas = state.canvas
   const ctx = canvas.getContext('2d')!
 
   ctx.clearRect(0, 0, canvasW, canvasH)

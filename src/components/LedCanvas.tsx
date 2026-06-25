@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react'
 import type { Board, Widget } from '../types'
 import { renderFrame } from '../renderer/renderFrame'
 import type { ScrollState } from '../renderer/rasterize/rasterizeScrollText'
+import { clearDotSpriteCache } from '../renderer/dotSpriteCache'
+import { evictWidgetCache } from '../renderer/rasterize/rasterizeCache'
 
 type Props = {
   board: Board
@@ -16,13 +18,27 @@ export default function LedCanvas({ board, widgets, scale = 1, style }: Props) {
   const scrollStatesRef = useRef<Map<string, ScrollState>>(new Map())
   const lastTimeRef = useRef<number>(0)
   const rafRef = useRef<number>(0)
+  const prevWidgetIdsRef = useRef<Set<string>>(new Set())
 
   const step = board.dotSize + board.dotGap
   // Logical (CSS) canvas size
   const canvasW = board.width * step
   const canvasH = board.height * step
 
+  // Evict raster cache entries for widgets that have been removed
   useEffect(() => {
+    const currentIds = new Set(widgets.map((w) => w.id))
+    prevWidgetIdsRef.current.forEach((id) => {
+      if (!currentIds.has(id)) evictWidgetCache(id)
+    })
+    prevWidgetIdsRef.current = currentIds
+  }, [widgets])
+
+  useEffect(() => {
+    // Board parameters changed — invalidate sprite cache so dots are re-rendered
+    // at the new size/mode before the next frame.
+    clearDotSpriteCache()
+
     const canvas = canvasRef.current
     if (!canvas) return
 

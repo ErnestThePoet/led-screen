@@ -1,9 +1,7 @@
-import type { Board, Widget, DateTimeWidget, ClockWidget, ScrollTextWidget, PatternWidget } from '../types'
+import type { Board, Widget } from '../types'
 import { drawLedDot } from './drawLedDot'
-import { rasterizeDateTime } from './rasterize/rasterizeDateTime'
-import { rasterizeClock } from './rasterize/rasterizeClock'
-import { rasterizeScrollText, type ScrollState } from './rasterize/rasterizeScrollText'
-import { rasterizePattern } from './rasterize/rasterizePattern'
+import { getCachedRaster } from './rasterize/rasterizeCache'
+import type { ScrollState } from './rasterize/rasterizeScrollText'
 
 const ALPHA_THRESHOLD = 128
 
@@ -45,7 +43,7 @@ export function renderFrame(
     .sort((a, b) => a.zIndex - b.zIndex)
 
   for (const widget of visible) {
-    const offscreen = rasterizeWidget(widget, dotSize, scrollStates, deltaMs)
+    const offscreen = getCachedRaster(widget, dotSize, scrollStates, deltaMs)
     if (!offscreen) continue
 
     const offCtx = offscreen.getContext('2d') as OffscreenCanvasRenderingContext2D | null
@@ -68,31 +66,5 @@ export function renderFrame(
         drawLedDot(ctx, screenX, screenY, radius, widget.color, alpha > ALPHA_THRESHOLD, renderMode)
       }
     }
-  }
-}
-
-function rasterizeWidget(
-  widget: Widget,
-  dotSize: number,
-  scrollStates: Map<string, ScrollState>,
-  deltaMs: number
-): OffscreenCanvas | null {
-  switch (widget.type) {
-    case 'datetime':
-      return rasterizeDateTime(widget as DateTimeWidget, dotSize)
-    case 'clock':
-      return rasterizeClock(widget as ClockWidget, dotSize)
-    case 'scrolltext': {
-      let state = scrollStates.get(widget.id)
-      if (!state) {
-        state = { itemIndex: 0, offset: 0, pauseRemaining: 0 }
-        scrollStates.set(widget.id, state)
-      }
-      return rasterizeScrollText(widget as ScrollTextWidget, dotSize, state, deltaMs)
-    }
-    case 'pattern':
-      return rasterizePattern(widget as PatternWidget, dotSize)
-    default:
-      return null
   }
 }

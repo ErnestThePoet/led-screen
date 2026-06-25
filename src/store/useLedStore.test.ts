@@ -11,6 +11,7 @@ beforeEach(() => {
     },
     widgets: [],
     selectedId: null,
+    customFonts: [],
   })
 })
 
@@ -49,5 +50,43 @@ describe('useLedStore', () => {
     act(() => { useLedStore.getState().setConfig({ board: newBoard, widgets: [] }) })
     expect(useLedStore.getState().board.width).toBe(64)
     expect(useLedStore.getState().selectedId).toBeNull()
+  })
+})
+
+describe('customFonts', () => {
+  it('addCustomFont adds a new font name to the list', () => {
+    act(() => { useLedStore.getState().addCustomFont('Comic Sans MS') })
+    expect(useLedStore.getState().customFonts).toContain('Comic Sans MS')
+  })
+
+  it('addCustomFont does not add duplicate font names', () => {
+    act(() => { useLedStore.getState().addCustomFont('Arial') })
+    act(() => { useLedStore.getState().addCustomFont('Arial') })
+    expect(useLedStore.getState().customFonts.filter((f) => f === 'Arial')).toHaveLength(1)
+  })
+
+  it('removeCustomFont removes an existing font name', () => {
+    act(() => { useLedStore.getState().addCustomFont('Georgia') })
+    act(() => { useLedStore.getState().removeCustomFont('Georgia') })
+    expect(useLedStore.getState().customFonts).not.toContain('Georgia')
+  })
+
+  it('removeCustomFont is safe when font name does not exist', () => {
+    expect(() => {
+      act(() => { useLedStore.getState().removeCustomFont('nonexistent') })
+    }).not.toThrow()
+  })
+
+  it('setConfig with customFonts restores the list', () => {
+    const board = useLedStore.getState().board
+    act(() => { useLedStore.getState().setConfig({ board, widgets: [], customFonts: ['Papyrus'] }) })
+    expect(useLedStore.getState().customFonts).toEqual(['Papyrus'])
+  })
+
+  it('setConfig without customFonts defaults to empty array', () => {
+    const board = useLedStore.getState().board
+    act(() => { useLedStore.getState().addCustomFont('Wingdings') })
+    act(() => { useLedStore.getState().setConfig({ board, widgets: [] }) })
+    expect(useLedStore.getState().customFonts).toEqual([])
   })
 })

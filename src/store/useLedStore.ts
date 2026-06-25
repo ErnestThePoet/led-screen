@@ -55,19 +55,23 @@ type LedStore = {
   board: Board
   widgets: Widget[]
   selectedId: string | null
+  customFonts: string[]
   setBoard: (patch: Partial<Board>) => void
   addWidget: (type: WidgetType) => void
   updateWidget: (id: string, patch: Partial<Widget>) => void
   removeWidget: (id: string) => void
   selectWidget: (id: string | null) => void
   setWidgets: (widgets: Widget[]) => void
-  setConfig: (config: Pick<LedConfig, 'board' | 'widgets'>) => void
+  setConfig: (config: Pick<LedConfig, 'board' | 'widgets'> & { customFonts?: string[] }) => void
+  addCustomFont: (font: string) => void
+  removeCustomFont: (font: string) => void
 }
 
 export const useLedStore = create<LedStore>((set) => ({
   board: DEFAULT_BOARD,
   widgets: [],
   selectedId: null,
+  customFonts: [],
   setBoard: (patch) => set((s) => ({ board: { ...s.board, ...patch } })),
   addWidget: (type) =>
     set((s) => ({
@@ -84,5 +88,12 @@ export const useLedStore = create<LedStore>((set) => ({
     })),
   selectWidget: (id) => set({ selectedId: id }),
   setWidgets: (widgets) => set({ widgets }),
-  setConfig: ({ board, widgets }) => set({ board, widgets, selectedId: null }),
+  setConfig: ({ board, widgets, customFonts }) =>
+    set({ board, widgets, customFonts: customFonts ?? [], selectedId: null }),
+  addCustomFont: (font) =>
+    set((s) => ({
+      customFonts: s.customFonts.includes(font) ? s.customFonts : [...s.customFonts, font],
+    })),
+  removeCustomFont: (font) =>
+    set((s) => ({ customFonts: s.customFonts.filter((f) => f !== font) })),
 }))

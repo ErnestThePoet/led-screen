@@ -58,4 +58,5 @@ export type LedConfig = {
   version: '1.0'
   board: Board
   widgets: Widget[]
+  customFonts?: string[]
 }

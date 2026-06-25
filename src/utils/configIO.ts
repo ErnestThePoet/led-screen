@@ -15,15 +15,23 @@ export function parseConfig(json: string): LedConfig | null {
   }
 }
 
-/** Serializes board + widgets to a JSON string. */
-export function serializeConfig(board: Board, widgets: Widget[]): string {
-  const config: LedConfig = { version: '1.0', board, widgets }
+/** Serializes board + widgets + customFonts to a JSON string. */
+export function serializeConfig(
+  board: Board,
+  widgets: Widget[],
+  customFonts: string[] = []
+): string {
+  const config: LedConfig = { version: '1.0', board, widgets, customFonts }
   return JSON.stringify(config, null, 2)
 }
 
 /** Triggers a browser download of the config as a .ledjson file. */
-export function exportConfig(board: Board, widgets: Widget[]): void {
-  const content = serializeConfig(board, widgets)
+export function exportConfig(
+  board: Board,
+  widgets: Widget[],
+  customFonts: string[] = []
+): void {
+  const content = serializeConfig(board, widgets, customFonts)
   const blob = new Blob([content], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

@@ -15,6 +15,7 @@ export default function ConfigPage() {
   const board = useLedStore((s) => s.board)
   const widgets = useLedStore((s) => s.widgets)
   const setConfig = useLedStore((s) => s.setConfig)
+  const customFonts = useLedStore((s) => s.customFonts)   // ← 新增
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const step = board.dotSize + board.dotGap
@@ -24,14 +25,14 @@ export default function ConfigPage() {
   const scaleY = PREVIEW_MAX_H / actualH
   const scale = Math.min(scaleX, scaleY, 1)
 
-  const handleExport = () => exportConfig(board, widgets)
+  const handleExport = () => exportConfig(board, widgets, customFonts)
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     const config = await importConfig(file)
     if (config) {
-      setConfig({ board: config.board, widgets: config.widgets })
+      setConfig({ board: config.board, widgets: config.widgets, customFonts: config.customFonts })
     } else {
       alert('配置文件格式无效，请检查文件内容。')
     }

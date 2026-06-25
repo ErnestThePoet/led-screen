@@ -15,7 +15,7 @@ export default function ConfigPage() {
   const board = useLedStore((s) => s.board)
   const widgets = useLedStore((s) => s.widgets)
   const setConfig = useLedStore((s) => s.setConfig)
-  const customFonts = useLedStore((s) => s.customFonts)   // ← 新增
+  const customFonts = useLedStore((s) => s.customFonts)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const step = board.dotSize + board.dotGap

@@ -122,7 +122,8 @@ const CHINESE_FONTS = [
 → 调用 isFontAvailable(name)
   → true：直接 addCustomFont(name)，选中该字体，清空输入框
   → false：显示 ⚠ 警告文字，**不自动保存**
-            用户再次点击「+ 添加」→ 强制保存（跳过检测）
+            组件内部记录 `warnedFont` 状态 = 当前输入值
+            用户再次点击「+ 添加」且输入值 === warnedFont → 强制保存（跳过检测），清空 warnedFont
 ```
 
 ### `isFontAvailable` 实现
